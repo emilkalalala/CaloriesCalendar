@@ -1,43 +1,30 @@
 
-class Profil():
+def male_cpm_small(Weight, Heigh, Age):
+        # Calculate male bmr
+    return (66 + 13.7 * Weight + 5 * Heigh - 6.8 * Age)*1.2
 
-    def __init__(self, weight, height, age, sex, activity):
-        self.weight = weight
-        self.height = height
-        self.age = age
-        self.sex = sex
-        self.activity = activity #A B C D E
+def female_cpm_small(Weight, Heigh, Age):
+        # Calculate female BMR
+    return (655 + 9.6 * Weight + 1.8 * Heigh - 4.7 * Age)*1.2
 
-def CPM(self, sex, activity):
-    if sex == "F":
-        bmr = 655 + 9.6 * self.weight + 1.8 * self.height - 4.7 * self.age
-        if activity == "A":
-            cpm = bmr * 2
-        if activity == "B":
-            cpm = bmr * 1.7
-        if activity == "C":
-            cpm = bmr * 1.5
-        if activity == "D":
-            cpm = bmr * 1.3
-        if activity == "E":
-            cpm = bmr * 1.2
+def male_cpm_medium(Weight, Heigh, Age):
+        # Calculate male bmr
+    return (66 + 13.7 * Weight + 5 * Heigh - 6.8 * Age)*1.5
 
-    else:
-        bmr = 66 + 13.7 * self.weight + 5 * self.height - 6.8 * self.age
-        if activity == "A":
-            cpm = bmr * 2
-        if activity == "B":
-            cpm = bmr * 1.7
-        if activity == "C":
-            cpm = bmr * 1.5
-        if activity == "D":
-            cpm = bmr * 1.3
-        if activity == "E":
-            cpm = bmr * 1.2
+def female_cpm_medium(Weight, Heigh, Age):
+        # Calculate female BMR
+    return (655 + 9.6 * Weight + 1.8 * Heigh - 4.7 * Age)*1.5
 
-    return cpm
+def male_cpm_big(Weight, Heigh, Age):
+        # Calculate male bmr
+    return (66 + 13.7 * Weight + 5 * Heigh - 6.8 * Age)*2
+
+def female_cpm_big(Weight, Heigh, Age):
+        # Calculate female BMR
+    return (655 + 9.6 * Weight + 1.8 * Heigh - 4.7 * Age)*2
 
 
-def BMI(self):
-    bmi = self.weight / (self.height) ^ 2
-    return bmi
+
+def BMI(Weight, Height):
+    return Weight / (Height/100)  ** 2
+
