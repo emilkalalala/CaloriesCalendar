@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import Canvas, INSERT
 from tkinter import filedialog as fd
 from tkinter import messagebox
+from tkinter import font as tkfont
 
 from PIL import Image, ImageTk
 from Profil import male_cpm_small, male_cpm_medium, male_cpm_big, female_cpm_medium,female_cpm_small,female_cpm_big
@@ -272,25 +273,21 @@ class Page3(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = ttk.Label(self, text="HISTORY", font=LARGEFONT)
+        appHighlightFont = tkfont.Font(family='Helvetica', size=10, weight='bold')
         label.grid(row=0, column=3,pady=20,padx=20)
         button2 = ttk.Button(self, text="MENU",
                              command=lambda: controller.show_frame(StartPage))
         button2.grid(row=0,column=0,padx = 10, pady=10)
 
-        frame1 = tk.LabelFrame(self)
-        frame1.grid(row=2,column=4,columnspan=2,padx=10,pady=10)
-        label1 = tk.Label(frame1,text="TODAY",bg='red')
-        label1.grid(row=0,column=0)
+
 
         try:
-            with open('history.csv', newline='') as f:
-                csv_reader = csv.reader(f)
-                date = next(csv_reader)
-                today = next(csv_reader)
-                yesterday_date=next(csv_reader)
-                yesterday = next(csv_reader)
-                twodayago_date=next(csv_reader)
-                twodaysago = next (csv_reader)
+            with open ("history.csv",'r') as file:
+                read=file.readlines()
+            today=read[-1]
+            yesterday=read[-3]
+            twodaysago=read[-5]
+
         except:
             pass
 
@@ -300,36 +297,74 @@ class Page3(tk.Frame):
 
         splitted3 = str(twodaysago).split(',')
 
+        splitted1.pop()
+        splitted2.pop()
+        splitted3.pop()
 
         #Today=splitted1[0]+'\n'+splitted1[1]+'\n'+splitted1[2]
-        Today = today[0]+'\n'+today[1]+'\n'+today[2]
-        print(Today)
+        Today = ""
+        TodayKcal=float(0)
+        round(TodayKcal,2)
+        for i in splitted1:
+            Today=Today+i+"\n"
+            k=i.split(':')
+            kc=k[-1]
+            kca=kc.split(' ')
+            kcal=kca[0]
+            TodayKcal=TodayKcal+float(kcal)
+        print(TodayKcal)
 
-        #Yesterday = splitted2[0]+'\n'+splitted2[1]+'\n'+splitted2[2]
-        Yesterday = yesterday[0]+'\n'+yesterday[1]+'\n'+yesterday[2]
+        Yesterday=""
+        YesterdayKcal=float(0)
+        round(YesterdayKcal,2)
+        for i in splitted2:
+            Yesterday = Yesterday+i+"\n"
+            k = i.split(':')
+            kc = k[-1]
+            kca = kc.split(' ')
+            kcal = kca[0]
+            YesterdayKcal = YesterdayKcal + float(kcal)
+        print(YesterdayKcal)
 
-       # TwoDaysAgo = splitted3[0]+'\n'+splitted3[1]+'\n'+splitted3[2]
-        TwoDaysAgo = twodaysago[0]+'\n'+twodaysago[1]+'\n'+twodaysago[2]
+        TwoDaysAgo=""
+        TwoDaysAgoKcal=float(0)
+        round(TwoDaysAgoKcal,2)
+        for i in splitted3:
+            TwoDaysAgo= TwoDaysAgo+i+"\n"
+            k = i.split(':')
+            kc = k[-1]
+            kca = kc.split(' ')
+            kcal = kca[0]
+            TwoDaysAgoKcal = TwoDaysAgoKcal + float(kcal)
+        print(YesterdayKcal)
 
-
-
+        frame1 = tk.LabelFrame(self, width=15, heigh=25)
+        frame1.grid(row=2, column=4, columnspan=2, padx=10, pady=10)
+        label1 = tk.Label(frame1, text="TODAY", bg='red')
+        label1.grid(row=0, column=0)
         labelT=tk.Label(frame1,text=Today)
         labelT.grid(row=1,column=0)
+        sum1=tk.Label(frame1,text="SUM KCAL : "+str(TodayKcal), font=appHighlightFont)
+        sum1.grid( sticky="S")
 
-        frame2 = tk.LabelFrame(self)
+        frame2 = tk.LabelFrame(self,width=15,heigh=25)
         frame2.grid(row=2, column=2, columnspan=2)
         label2 = tk.Label(frame2,text='YESTERDAY',bg='red')
         label2.grid(row=0,column=0,columnspan=2)
         labelY = tk.Label(frame2, text=Yesterday)
         labelY.grid(row=1, column=0)
+        sum2 = tk.Label(frame2, text="SUM KCAL : " + str(YesterdayKcal), font=appHighlightFont)
+        sum2.grid(sticky="S")
 
-        frame3 = tk.LabelFrame(self)
+        frame3 = tk.LabelFrame(self,width=15,heigh=25)
         frame3.grid(row=2, column=0,padx=10,pady=10)
         label3 = tk.Label(frame3,text='2 DAYS AGO',bg='red')
         label3.grid(row=0,column=0,columnspan=2)
 
         labelTW = tk.Label(frame3, text=TwoDaysAgo)
         labelTW.grid(row=1, column=0)
+        sum3 = tk.Label(frame3, text="SUM KCAL : " + str(TwoDaysAgoKcal), font=appHighlightFont)
+        sum3.grid(sticky="S")
 
         def Show():
             newWindow = tk.Toplevel(self)
