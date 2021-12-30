@@ -1,5 +1,5 @@
 import tkinter as tk
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from tkinter import ttk
 from tkinter import Canvas, INSERT
 from tkinter import filedialog as fd
@@ -49,7 +49,7 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="CALORIES APP", font=LARGEFONT)
 
         label.grid(row=0, column=4, padx=10, pady=10)
-        image2 = Image.open("C:/Users/emilk/PycharmProjects/CaloriesCalendarGit/CaloriesCalendar/calculatorcalories.png")
+        image2 = Image.open("calculatorcalories.png")
         image1 = image2.resize((300, 200), Image.ANTIALIAS)
         photo = ImageTk.PhotoImage(image1)
 
@@ -183,6 +183,7 @@ class Page1(tk.Frame):
 
 class Page2(tk.Frame):
     def __init__(self, parent, controller):
+        print("sdkifbwesijfbsjkhfb wsekfkw kw")
         tk.Frame.__init__(self, parent)
         label = ttk.Label(self, text="TODAY", font=LARGEFONT)
         label.grid(row=0, column=3, padx=10, pady=10)
@@ -204,69 +205,62 @@ class Page2(tk.Frame):
         sniadGL.grid(row=3,column=5,padx=2)
         sniadG = tk.Entry(self)
         sniadG.grid(row=3, column=4,padx=2)
-
-
-
-        wynikL = tk.Label(self, text = 0,font=("Courier", 20))
-        wynikL.grid(row=10,column=4,ipadx=2)
+        self.wynikL = tk.Label(self, text = 0,font=("Courier", 20))
+        self.wynikL.grid(row=10,column=4,ipadx=2)
         opisL = tk.Label(self,text="SUM KCAL",font=("Courier", 20))
         opisL.grid(row=10,column=3, ipadx=2)
-
-
-
-
-
         wronglabel = tk.Label(self)
         wronglabel.grid(row=6,column=3)
-        def APIB():
-            api_url = 'https://api.calorieninjas.com/v1/nutrition?query='
-            query = sniad.get()
-            response = requests.get(api_url + query, headers={'X-Api-Key': '+K83QUc3yx5viW1/jBEWqw==YJ6E1gKifoWb4kZn'})
-            if response.status_code == requests.codes.ok:
-                try:
-                     wronglabel.config(text="")
-                     ab =  int(response.json()["items"][0]["calories"])/100*int(sniadG.get())
-                     a= round(ab,1)
-                     b = int(wynikL.cget("text")) + a
-                     print(b)
-
-                     wynikL.config(text=b)
-
-                     file1 = open('history.csv', 'a')
-                     file1.write(sniad.get() + ":" + str(a)+" kcal"+ ",")
-
-                except:
-                    wronglabel.config(text="This food is not in food base")
-
-            else:
-                wynikL.config(text="Connection with database is not avaialable in this moment")
-
-
-        def remove():
-            wynikL.config(text=0)
-
-        def endDay():
-            file1=open('history.csv','a')
-            file1.write("\n")
-
-            wynikL.config(text=0)
-
-        def startDay():
-            file1=open('history.csv','a')
-            file1.write(str(datetime.date(datetime.now()))+"\n")
-
-
-        button3 = tk.Button(self,bg = "red", text="ADD",command=APIB)
+        button3 = tk.Button(self,bg = "red", text="ADD",command=self.APIB)
         button3.grid(row=7,column=3,ipadx=2,padx=10, pady=20)
 
-        button4 = tk.Button(self, bg="red", text="REMOVE ALL", command=remove)
+        #button4 = tk.Button(self, bg="red", text="REMOVE ALL", command=remove)
+        self.calculate_calories()
+
+    def calculate_calories(self):
+        calories = float(0)
+        with open("history.csv", "r", newline="") as csvfile:
+            reader = csv.reader(csvfile, delimiter=";")
+            for row in reader:
+                print("emilka")
+                print(str(datetime.date(datetime.now())))
+                print(row[0])
+                if row[0] == str(datetime.date(datetime.now())):
+                    print("EMILKKOWE DODAWNIAWE")
+                    calories += float(row[2])
+        calories = round(calories, 1)
+        self.wynikL.config(text=calories)
+
+
+    def APIB():
+        api_url = 'https://api.calorieninjas.com/v1/nutrition?query='
+        query = sniad.get()
+        response = requests.get(api_url + query, headers={'X-Api-Key': '+K83QUc3yx5viW1/jBEWqw==YJ6E1gKifoWb4kZn'})
+        if response.status_code == requests.codes.ok:
+            try:
+                wronglabel.config(text="")
+                ab =  int(response.json()["items"][0]["calories"])/100*int(sniadG.get())
+                a= round(ab, 1)
+                print("TEST JEDEN")
+                with open('history.csv', 'a', newline="") as file:
+                    print("TEST JEDEN i jedna czwarta")
+                    spamwriter = csv.writer(file, delimiter=";", quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                    print("TEST JEDEN i pol")
+                    spamwriter.writerow([str(datetime.date(datetime.now())), sniad.get(), str(a)])
+                print("TEST DWA")
+                calculate_calories()
+            except Exception as e:
+                print(e.args)
+                wronglabel.config(text="This food is not in food base")
+
+        else:
+            wynikL.config(text="Connection with database is not avaialable in this moment")
+
+
+    def remove():
+        wynikL.config(text=0)
         #button4.grid(row=7, column=3,padx=2)
 
-        button5 = tk.Button(self,bg='red',text='END DAY',command=endDay)
-        button5.grid(row=7,column=4,ipadx=2,padx=10, pady=20)
-
-        button6=tk.Button(self,bg='red',text="START DAY",command=startDay)
-        button6.grid(row=7, column=2,padx=10, pady=20)
 
 class Page3(tk.Frame):
 
@@ -279,64 +273,27 @@ class Page3(tk.Frame):
                              command=lambda: controller.show_frame(StartPage))
         button2.grid(row=0,column=0,padx = 10, pady=10)
 
-
-
-        try:
-            with open ("history.csv",'r') as file:
-                read=file.readlines()
-            today=read[-1]
-            yesterday=read[-3]
-            twodaysago=read[-5]
-
-        except:
-            pass
-
-        splitted1 = str(today).split(',')
-
-        splitted2 = str(yesterday).split(',')
-
-        splitted3 = str(twodaysago).split(',')
-
-        splitted1.pop()
-        splitted2.pop()
-        splitted3.pop()
-
-        #Today=splitted1[0]+'\n'+splitted1[1]+'\n'+splitted1[2]
         Today = ""
-        TodayKcal=float(0)
-        round(TodayKcal,2)
-        for i in splitted1:
-            Today=Today+i+"\n"
-            k=i.split(':')
-            kc=k[-1]
-            kca=kc.split(' ')
-            kcal=kca[0]
-            TodayKcal=TodayKcal+float(kcal)
-        print(TodayKcal)
+        TodayKcal = 0
 
-        Yesterday=""
-        YesterdayKcal=float(0)
-        round(YesterdayKcal,2)
-        for i in splitted2:
-            Yesterday = Yesterday+i+"\n"
-            k = i.split(':')
-            kc = k[-1]
-            kca = kc.split(' ')
-            kcal = kca[0]
-            YesterdayKcal = YesterdayKcal + float(kcal)
-        print(YesterdayKcal)
+        Yesterday = ""
+        YesterdayKcal = 0
 
-        TwoDaysAgo=""
-        TwoDaysAgoKcal=float(0)
-        round(TwoDaysAgoKcal,2)
-        for i in splitted3:
-            TwoDaysAgo= TwoDaysAgo+i+"\n"
-            k = i.split(':')
-            kc = k[-1]
-            kca = kc.split(' ')
-            kcal = kca[0]
-            TwoDaysAgoKcal = TwoDaysAgoKcal + float(kcal)
-        print(YesterdayKcal)
+        TwoDaysAgo = ""
+        TwoDaysAgoKcal = 0
+
+        with open("history.csv", "r", newline="") as file:
+            reader = csv.reader(file, delimiter=";")
+            for row in reader:
+                if row[0] == str(date.today()):
+                    Today += row[1] + ": " + row[2] + "\n"
+                    TodayKcal += float(row[2])
+                elif row[0] == str(date.today() - timedelta(days = 1)):
+                    Yesterday += row[1] + ": " + row[2] + "\n"
+                    YesterdayKcal += float(row[2])
+                elif row[0] == str(date.today() - timedelta(days = 2)):
+                    TwoDaysAgo += row[1] + ": " + row[2] + "\n"
+                    TwoDaysAgoKcal += float(row[2])
 
         frame1 = tk.LabelFrame(self, width=15, heigh=25)
         frame1.grid(row=2, column=4, columnspan=2, padx=10, pady=10)
@@ -365,6 +322,7 @@ class Page3(tk.Frame):
         labelTW.grid(row=1, column=0)
         sum3 = tk.Label(frame3, text="SUM KCAL : " + str(TwoDaysAgoKcal), font=appHighlightFont)
         sum3.grid(sticky="S")
+
 
         def Show():
             newWindow = tk.Toplevel(self)
