@@ -1,6 +1,6 @@
 import tkinter as tk
 from datetime import date, datetime, timedelta
-from tkinter import ttk
+from tkinter import StringVar, ttk
 from tkinter import Canvas, INSERT
 from tkinter import filedialog as fd
 from tkinter import messagebox
@@ -183,7 +183,9 @@ class Page1(tk.Frame):
 
 class Page2(tk.Frame):
     def __init__(self, parent, controller):
-        print("sdkifbwesijfbsjkhfb wsekfkw kw")
+        
+        self.hints_list = set()
+        self.get_hints_list()
         tk.Frame.__init__(self, parent)
         label = ttk.Label(self, text="TODAY", font=LARGEFONT)
         label.grid(row=0, column=3, padx=10, pady=10)
@@ -196,26 +198,59 @@ class Page2(tk.Frame):
         # using grid
         button2.grid(row=0, column=0)
 
-        sniadL = tk.Label(self,text="FOOD NAME")
-        sniadL.grid (row=3,column=2)
+        self.sniadL = tk.Label(self,text="FOOD NAME")
+        self.sniadL.grid (row=3,column=2)
 
-        sniad = tk.Entry(self)
-        sniad.grid(row=3, column=3,padx=2)
+        sv = StringVar()
+        sv.trace("w", lambda name, index, mode, sv=sv: self.text_inputed())
+
+        self.sniad = tk.Entry(self, textvariable=sv)
+        self.sniad.grid(row=3, column=3,padx=2)
+
+        
+
+        self.previous_list = tk.Listbox(self,height=3)
+        self.previous_list.grid(row=4, column=3, sticky="n")
+        self.previous_list.grid_forget()
+
         sniadGL= tk.Label(self,text="gram")
         sniadGL.grid(row=3,column=5,padx=2)
-        sniadG = tk.Entry(self)
-        sniadG.grid(row=3, column=4,padx=2)
+        self.sniadG = tk.Entry(self)
+        self.sniadG.grid(row=3, column=4,padx=2)
         self.wynikL = tk.Label(self, text = 0,font=("Courier", 20))
         self.wynikL.grid(row=10,column=4,ipadx=2)
         opisL = tk.Label(self,text="SUM KCAL",font=("Courier", 20))
         opisL.grid(row=10,column=3, ipadx=2)
-        wronglabel = tk.Label(self)
-        wronglabel.grid(row=6,column=3)
+        self.wronglabel = tk.Label(self)
+        self.wronglabel.grid(row=6,column=3)
         button3 = tk.Button(self,bg = "red", text="ADD",command=self.APIB)
         button3.grid(row=7,column=3,ipadx=2,padx=10, pady=20)
 
         #button4 = tk.Button(self, bg="red", text="REMOVE ALL", command=remove)
         self.calculate_calories()
+
+    def get_hints_list(self):
+        with open("hints", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                self.hints_list.add(line)
+        
+
+
+    def text_inputed(self):
+        self.previous_list.delete(0, tk.END)
+        if len(self.sniad.get()) > 0:
+            self.previous_list.grid_configure(row=4, column=3, sticky="n")
+            hints = []
+            for hint in self.hints_list:
+                if hint.startswith(self.sniad.get()):
+                    hints.append(hint)
+            hints.sort()
+            for i, hint in enumerate(hints):
+                self.previous_list.insert(i, hint)
+        else:
+            self.previous_list.grid_forget()
+
 
     def calculate_calories(self):
         calories = float(0)
@@ -232,30 +267,36 @@ class Page2(tk.Frame):
         self.wynikL.config(text=calories)
 
 
-    def APIB():
+    def APIB(self):
         api_url = 'https://api.calorieninjas.com/v1/nutrition?query='
-        query = sniad.get()
+        query = self.sniad.get()
         response = requests.get(api_url + query, headers={'X-Api-Key': '+K83QUc3yx5viW1/jBEWqw==YJ6E1gKifoWb4kZn'})
         if response.status_code == requests.codes.ok:
             try:
-                wronglabel.config(text="")
-                ab =  int(response.json()["items"][0]["calories"])/100*int(sniadG.get())
+                self.wronglabel.config(text="")
+                ab =  int(response.json()["items"][0]["calories"])/100*int(self.sniadG.get())
                 a= round(ab, 1)
                 print("TEST JEDEN")
                 with open('history.csv', 'a', newline="") as file:
                     print("TEST JEDEN i jedna czwarta")
                     spamwriter = csv.writer(file, delimiter=";", quotechar='|', quoting=csv.QUOTE_MINIMAL)
                     print("TEST JEDEN i pol")
-                    spamwriter.writerow([str(datetime.date(datetime.now())), sniad.get(), str(a)])
+                    spamwriter.writerow([str(datetime.date(datetime.now())), self.sniad.get(), str(a)])
                 print("TEST DWA")
-                calculate_calories()
+                self.calculate_calories()
+                self.save_to_history(self.sniad.get())
+                self.get_hints_list()
             except Exception as e:
                 print(e.args)
-                wronglabel.config(text="This food is not in food base")
+                self.wronglabel.config(text="This food is not in food base")
 
         else:
-            wynikL.config(text="Connection with database is not avaialable in this moment")
+            self.wynikL.config(text="Connection with database is not avaialable in this moment")
 
+
+    def save_to_history(self, food):
+        with open("hints", "a") as file:
+            file.write(food + "\n")
 
     def remove():
         wynikL.config(text=0)
